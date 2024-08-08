@@ -1,0 +1,59 @@
+# Refrain from fixing docker tags. Instead use the appropriate chart version, while helm install
+# Latest Helm chart of Bitnami uses Keycloak 18+
+
+service:
+  type: ClusterIP
+
+auth:
+  adminUser: admin
+
+extraEnvVars:
+  - name: KEYCLOAK_EXTRA_ARGS
+    value: "-Dkeycloak.profile.feature.upload_scripts=enabled"
+    #value: "-Dkeycloak.profile.feature.upload_scripts=enabled -Dkeycloak.import=/config/realm-mosip.json"
+
+## Disable ingress as we use Istio
+ingress:
+  enabled: true
+  hostname:
+  annotations:
+    ingress.kubernetes.io/class: nginx
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/issuer: letsencrypt
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  tls: true
+
+proxyAddressForwarding: true
+
+replicaCount: 1
+
+# Enable if replicaCount > 1
+serviceDiscovery:
+  enabled: true
+
+resources:
+  limits: {}
+  #   cpu: 250m
+  #   memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 1000Mi
+
+rbac:
+  create: true
+  rules:
+    - apiGroups:
+        - ""
+      resources:
+        - pods
+      verbs:
+        - get
+        - list
+postgresql:
+  enabled: false
+externalDatabase:
+  host: "10.1.1.3"
+  port: 5432
+  user: registry
+  database: keycloak
+  password: "CKHAzX1NoBg_m8As"
