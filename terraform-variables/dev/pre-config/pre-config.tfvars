@@ -121,7 +121,11 @@ sqlInfo = {
 
 dbInfo = [
   {
-    name         = "registry"
+    name         = "mosip-esignet"
+    instanceName = "esignet-dev-pgsql"
+  },
+  {
+    name         = "keycloak"
     instanceName = "esignet-dev-pgsql"
   }
 ]
@@ -177,6 +181,7 @@ clusterInfo = {
 }
 
 redisInfo = {
+  instanceName = "esignet-dev-redis"
   instanceName = "esignet-dev-redis"
   version      = "REDIS_7_0"
   protection   = false,

@@ -99,17 +99,38 @@ steps:
   entrypoint: 'helm'
   args: ['install', 'artifactory', 'mosip/artifactory', '-n', 'esignet', '--create-namespace', '--set', 'image.repository=mosipqa/artifactory-server', '--set', 'image.tag=1.4.1-ES', '--version', '12.0.2', '--wait']
   waitFor:
-    - 'helm-softhsm-repo'
+    - 'helm-softhsm-install'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
   id: 'helm-keycloak-install'
-  entrypoint: 'helm'
-  args: ['install', 'keycloak', 'mosip/keycloak', '-n', 'esignet', '--create-namespace', '--set', 'image.repository=mosipid/mosip-keycloak', '--set', 'image.tag=16.1.1-debian-10-r85', '--version', '7.1.18', '-f', 'deployments/configs/keycloak.yaml', '--set', 'ingress.hostname=${_DOMAIN_}', '--wait']
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      apt-get update
+      apt-get install jq -y &&
+      sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json  | jq -r ".ipAddresses[0].ipAddress") &&
+      sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_}) &&
+      helm install keycloak mosip/keycloak -n esignet --create-namespace --version 7.1.18 -f deployments/configs/keycloak.yaml --set ingress.hostname=${_DOMAIN_} --set externalDatabase.host=$sqlIP --set externalDatabase.password=$sqlPass --wait
   waitFor:
     - 'helm-artifactory-server-install'
+- name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+  id: 'helm-postgres-init'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      apt-get update
+      apt-get install jq -y &&
+      sqlIP=$(gcloud sql instances describe ${_DB_NAME_} --format=json  | jq -r ".ipAddresses[0].ipAddress") &&
+      sqlPass=$(gcloud secrets versions access latest --secret ${_SECRET_NAME_}) &&
+      kubectl create secret -n esignet generic postgres --from-literal=password="$sqlPass" &&
+      helm -n esignet install postgres-init mosip/postgres-init -f deployments/configs/db_init.yaml --version 12.0.2 --set databases.mosip_esignet.host=$sqlIP --wait
+  waitFor:
+    - 'helm-keycloak-install'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Remove worker cidr'
   entrypoint: 'bash'
-  waitFor: 'helm-keycloak-install'
+  waitFor: 'helm-postgres-init'
   args:
     - -c
     - |
@@ -128,8 +149,8 @@ substitutions:
   _LOG_BUCKET_: ''
   _EMAIL_ID_: ''
   _SERVICE_ACCOUNT_: ''
-#  _SECRET_NAME_: 'esignet-dev'
-#  _DB_NAME_: 'esignet-dev-pgsql'
+  _SECRET_NAME_: 'esignet-dev'
+  _DB_NAME_: 'esignet-dev-pgsql'
   _LB_NAME_: 'esignet-dev-glb-lb-ip'
 options:
     dynamicSubstitutions: true

@@ -16,6 +16,7 @@ extraEnvVars:
 ingress:
   enabled: true
   hostname:
+  path: "/auth"
   annotations:
     ingress.kubernetes.io/class: nginx
     kubernetes.io/ingress.class: nginx
@@ -26,7 +27,7 @@ ingress:
 proxyAddressForwarding: true
 
 replicaCount: 1
-
+httpRelativePath: "/auth"
 # Enable if replicaCount > 1
 serviceDiscovery:
   enabled: true
@@ -57,3 +58,7 @@ externalDatabase:
   user: registry
   database: keycloak
   password: "CKHAzX1NoBg_m8As"
+
+image:
+  repository: mosipid/mosip-keycloak
+  tag: 16.1.1-debian-10-r85

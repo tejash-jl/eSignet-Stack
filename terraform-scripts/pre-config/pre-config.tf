@@ -170,6 +170,7 @@ resource "google_sql_database_instance" "db_instance" {
     }
   }
   deletion_protection = var.sqlInfo.protection
+  root_password = random_password.password.result
 }
 
 resource "google_sql_database" "db" {
@@ -236,6 +237,7 @@ resource "google_sql_user" "users" {
   name     = "registry"
   instance = google_sql_database_instance.db_instance.name
   password = random_password.password.result
+  deletion_policy = "ABANDON"
 }
 
 resource "google_container_cluster" "gke_cluster" {
