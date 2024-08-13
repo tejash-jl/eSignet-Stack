@@ -1,0 +1,23 @@
+extraEnvVars:
+
+enable_insecure: false
+
+istio:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
+
+metrics:
+  enabled: false
+
+extraEnvVarsCM:
+  - artifactory-share
+  - softhsm-share
+  - oidc-ui
+
+oidc_ui:
+  configmaps:
+    oidc-ui:
+      REACT_APP_SBI_DOMAIN_URI: 'http://esignet.esignet'
+      SIGN_IN_WITH_ESIGNET_PLUGIN_URL: 'http://artifactory.esignet:80/artifactory/libs-release-local/mosip-plugins/sign-in-with-esignet.zip'
