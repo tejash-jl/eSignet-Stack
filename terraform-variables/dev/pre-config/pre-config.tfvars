@@ -121,7 +121,7 @@ sqlInfo = {
 
 dbInfo = [
   {
-    name         = "mosip-esignet"
+    name         = "mosip_esignet"
     instanceName = "esignet-dev-pgsql"
   },
   {

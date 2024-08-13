@@ -128,9 +128,33 @@ steps:
   waitFor:
     - 'helm-keycloak-install'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'esignet-config-map'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      sh deployments/scripts/config-init.sh ${_DOMAIN_} ${_DB_NAME_} ${_SECRET_NAME_}
+  waitFor:
+    - 'helm-postgres-init'
+- name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+  id: 'helm-esignet-install'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      apt-get update
+      apt-get install jq -y &&
+      helm -n esignet install esignet mosip/esignet --version 1.4.1 -f deployments/configs/esignet-values.yaml &&
+      kubectl get deploy esignet -n esignet -o json > deploy.json &&
+      cat <<< $(jq '.spec.template.spec += {"volumes":[{"name":"esignet-properties","configMap":{"name":"esignet-local-properties"}}]}' deploy.json) > deploy.json &&
+      cat <<< $(jq '.spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/esignet-local.properties","name":"esignet-properties","subPath":"esignet-local.properties"}]}' deploy.json) > deploy.json &&
+      kubectl apply -f deploy.json -n esignet
+  waitFor:
+    - 'esignet-config-map'
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Remove worker cidr'
   entrypoint: 'bash'
-  waitFor: 'helm-postgres-init'
+  waitFor: 'helm-esignet-install'
   args:
     - -c
     - |

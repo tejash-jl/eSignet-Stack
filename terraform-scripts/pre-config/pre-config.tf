@@ -177,7 +177,7 @@ resource "google_sql_database" "db" {
   count = length(var.dbInfo)
   name     = var.dbInfo[count.index].name
   instance = var.dbInfo[count.index].instanceName
-  depends_on = [google_sql_database_instance.db_instance, google_sql_user.users]
+  depends_on = [google_sql_database_instance.db_instance]
 }
 
 resource "google_compute_instance" "operations_vm" {
@@ -238,6 +238,7 @@ resource "google_sql_user" "users" {
   instance = google_sql_database_instance.db_instance.name
   password = random_password.password.result
   deletion_policy = "ABANDON"
+  depends_on = [google_sql_database_instance.db_instance]
 }
 
 resource "google_container_cluster" "gke_cluster" {
