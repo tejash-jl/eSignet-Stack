@@ -133,7 +133,7 @@ steps:
   args:
     - -c
     - |
-      sh deployments/scripts/config-init.sh ${_DOMAIN_} ${_DB_NAME_} ${_SECRET_NAME_}
+      sh deployments/scripts/config-init.sh ${_DOMAIN_} ${_DB_NAME_} ${_SECRET_NAME_} ${_REDIS_NAME_} ${_REGION_}
   waitFor:
     - 'helm-postgres-init'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
@@ -159,10 +159,20 @@ steps:
       cat deployments/configs/ingress.yaml | sed 's/DOMAIN/${_DOMAIN_}/'  | kubectl apply -n esignet -f -
   waitFor:
     - 'helm-esignet-install'
+- name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+  id: 'helm-keycloak-init'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      kubectl create configmap keycloak-host --from-literal=keycloak-internal-service-url=http://keycloak.esignet.svc.cluster.local:80/auth/ -n esignet &&
+      helm -n esignet install keycloak-init mosip/keycloak-init --set frontend=https://${_DOMAIN_}/auth --version 12.0.2
+  waitFor:
+    - 'helm-esignet-ui-install'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Remove worker cidr'
   entrypoint: 'bash'
-  waitFor: 'helm-esignet-ui-install'
+  waitFor: 'helm-keycloak-init'
   args:
     - -c
     - |
@@ -183,6 +193,7 @@ substitutions:
   _SERVICE_ACCOUNT_: ''
   _SECRET_NAME_: 'esignet-dev'
   _DB_NAME_: 'esignet-dev-pgsql'
+  _REDIS_NAME_: 'esignet-dev-redis'
   _LB_NAME_: 'esignet-dev-glb-lb-ip'
 options:
     dynamicSubstitutions: true
