@@ -149,6 +149,8 @@ steps:
       cat <<< $(jq '.spec.template.spec += {"volumes":[{"name":"esignet-properties","configMap":{"name":"esignet-local-properties"}}]}' deploy.json) > deploy.json &&
       cat <<< $(jq '.spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/esignet-local.properties","name":"esignet-properties","subPath":"esignet-local.properties"}]}' deploy.json) > deploy.json &&
       kubectl apply -f deploy.json -n esignet
+  waitFor:
+    - 'esignet-config-map'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
   id: 'helm-esignet-ui-install'
   entrypoint: 'bash'
@@ -170,9 +172,34 @@ steps:
   waitFor:
     - 'helm-esignet-ui-install'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  id: 'mock-identity-config-map'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      sh deployments/scripts/mock-config-init.sh ${_DB_NAME_} ${_SECRET_NAME_}
+  waitFor:
+    - 'helm-keycloak-init'
+- name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
+  id: 'helm-mock-identity-install'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      apt-get update
+      apt-get install jq -y &&
+      helm install -n esignet mock-identity-system mosip/mock-identity-system --version 0.9.3 -f deployments/configs/mock-identity-values.yaml &&
+      kubectl get deploy mock-identity-system -n esignet -o json > deploy.json &&
+      cat <<< $(jq '.spec.template.spec += {"volumes":[{"name":"mock-identity-properties","configMap":{"name":"mock-identity-properties"}}]}' deploy.json) > deploy.json &&
+      cat <<< $(jq '.spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/mock-identity-system-default.properties","name":"mock-identity-properties","subPath":"mock-identity-system-default.properties"}]}' deploy.json) > deploy.json &&
+      kubectl apply -f deploy.json -n esignet && 
+      cat deployments/configs/mock-identity-ingress.yaml | sed 's/DOMAIN/${_DOMAIN_}/'  | kubectl apply -n esignet -f -
+  waitFor:
+    - 'mock-identity-config-map'
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   id: 'Remove worker cidr'
   entrypoint: 'bash'
-  waitFor: 'helm-keycloak-init'
+  waitFor: 'helm-mock-identity-install'
   args:
     - -c
     - |

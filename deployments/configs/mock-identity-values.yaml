@@ -1,0 +1,26 @@
+extraEnvVars:
+  - name: artifactory_url_env
+    value: "http://artifactory.esignet:80/"
+  - name: container_user
+    value: "mosip"
+  - name: active_profile_env
+    value: "default"
+  - name: SPRING_CONFIG_NAME
+    value: "mock-identity-system"
+  - name: SPRING_CONFIG_LOCATION
+    value: "/home/mosip/mock-identity-system-default.properties"
+
+enable_insecure: false
+
+istio:
+  enabled: false
+
+serviceMonitor:
+  enabled: false
+
+metrics:
+  enabled: false
+
+extraEnvVarsCM:
+  - artifactory-share
+  - softhsm-share

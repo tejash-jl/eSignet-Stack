@@ -5,7 +5,7 @@ LOCAL_ESIGNET_PROPERTIES=deployments/configs/esignet.properties
 UPDATED_ESIGNET_PROPERTIES=esignet-local.properties
 
 export ESIGNET_HOST=$1
-export API_INTERNAL=https://$1/esignet/
+export API_INTERNAL=$1
 export KEYCLOAK_URL=$1
 export SOFTHSM_PIN=$(kubectl get secrets softhsm -n esignet -o jsonpath={.data.security-pin} | base64 --decode)
 export KAFKA_URL=kafka-cluster-kafka-bootstrap.kafka:9092

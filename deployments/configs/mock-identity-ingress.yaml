@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mock-identity
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/issuer: "letsencrypt"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: "nginx"
+  tls:
+    - hosts:
+        - DOMAIN
+      secretName: DOMAIN-tls
+  rules:
+    - host: DOMAIN
+      http:
+        paths:
+          - path: /v1/mock-identity-system
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: mock-identity-system
+                port:
+                  number: 80
