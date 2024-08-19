@@ -2,3 +2,4 @@ misc/**
 **/*.plan
 **/.DS_Store
 .idea
+.terraform

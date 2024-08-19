@@ -1,5 +1,6 @@
 projectInfo = {
   region = "asia-south1"
+  name   = "esignet-dev"
 }
 
 networkInfo = {
