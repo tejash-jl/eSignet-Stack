@@ -3,7 +3,7 @@ apt-get update
 apt-get install jq gettext -y
 LOCAL_ESIGNET_PROPERTIES=deployments/configs/esignet.properties
 UPDATED_ESIGNET_PROPERTIES=esignet-local.properties
-
+export AUTHENTICATOR_SERVICE=MockAuthenticationService
 export ESIGNET_HOST=$1
 export API_INTERNAL=$1
 export KEYCLOAK_URL=$1
@@ -14,7 +14,9 @@ export DB_PORT=5432
 export DB_USERNAME=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret $3)
 export REDIS_HOST=$(gcloud redis instances describe esignet-dev-redis --region asia-south1 --format=json | jq -r ".host")
-
+if [ $6 = "false" ]; then
+  export AUTHENTICATOR_SERVICE=IdaAuthenticatorImpl
+fi
 envsubst < $LOCAL_ESIGNET_PROPERTIES  > $UPDATED_ESIGNET_PROPERTIES
 
 kubectl create configmap esignet-local-properties -n esignet  --from-file=$UPDATED_ESIGNET_PROPERTIES

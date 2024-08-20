@@ -123,7 +123,7 @@ steps:
   args:
     - -c
     - |
-      sh deployments/scripts/config-init.sh ${_DOMAIN_} ${_DB_NAME_} ${_SECRET_NAME_} ${_REDIS_NAME_} ${_REGION_}
+      sh deployments/scripts/config-init.sh ${_DOMAIN_} ${_DB_NAME_} ${_SECRET_NAME_} ${_REDIS_NAME_} ${_REGION_} ${_ENABLE_MOCK_}
   waitFor:
     - 'helm-postgres-init'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
@@ -133,12 +133,12 @@ steps:
     - -c
     - |
       apt-get update
-      apt-get install jq -y &&
-      helm -n esignet install esignet mosip/esignet --version 1.4.1 -f deployments/configs/esignet-values.yaml &&
-      kubectl get deploy esignet -n esignet -o json > deploy.json &&
-      cat <<< $(jq '.spec.template.spec += {"volumes":[{"name":"esignet-properties","configMap":{"name":"esignet-local-properties"}}]}' deploy.json) > deploy.json &&
-      cat <<< $(jq '.spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/esignet-local.properties","name":"esignet-properties","subPath":"esignet-local.properties"}]}' deploy.json) > deploy.json &&
-      kubectl apply -f deploy.json -n esignet
+      apt-get install wget -y
+      wget https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64.tar.gz -O - | tar xz && mv yq_linux_amd64 /usr/bin/yq
+      helm  -n esignet template  esignet mosip/esignet --version 1.4.1 -f deployments/configs/esignet-values.yaml > deploy.yaml
+      yq  e -i 'select(di == 3).spec.template.spec.volumes += [{"name":"esignet-properties","configMap":{"name":"esignet-local-properties"}}]' deploy.yaml
+      yq e -i 'select(di == 3).spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/esignet-local.properties","name":"esignet-properties","subPath":"esignet-local.properties"}]}' deploy.yaml
+      kubectl apply -f deploy.yaml -n esignet
   waitFor:
     - 'esignet-config-map'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
@@ -167,7 +167,12 @@ steps:
   args:
     - -c
     - |
-      sh deployments/scripts/mock-config-init.sh ${_DB_NAME_} ${_SECRET_NAME_}
+      if [[ ${_ENABLE_MOCK_} == "true" ]]
+      then
+        sh deployments/scripts/mock-config-init.sh ${_DB_NAME_} ${_SECRET_NAME_}
+      else
+        echo "Skipping mock service setup"
+      fi
   waitFor:
     - 'helm-keycloak-init'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
@@ -176,14 +181,19 @@ steps:
   args:
     - -c
     - |
-      apt-get update
-      apt-get install jq -y &&
-      helm install -n esignet mock-identity-system mosip/mock-identity-system --version 0.9.3 -f deployments/configs/mock-identity-values.yaml &&
-      kubectl get deploy mock-identity-system -n esignet -o json > deploy.json &&
-      cat <<< $(jq '.spec.template.spec += {"volumes":[{"name":"mock-identity-properties","configMap":{"name":"mock-identity-properties"}}]}' deploy.json) > deploy.json &&
-      cat <<< $(jq '.spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/mock-identity-system-default.properties","name":"mock-identity-properties","subPath":"mock-identity-system-default.properties"}]}' deploy.json) > deploy.json &&
-      kubectl apply -f deploy.json -n esignet && 
-      cat deployments/configs/mock-identity-ingress.yaml | sed 's/DOMAIN/${_DOMAIN_}/'  | kubectl apply -n esignet -f -
+      if [[ ${_ENABLE_MOCK_} == "true" ]]
+      then
+        apt-get update
+        apt-get install wget -y
+        wget https://github.com/mikefarah/yq/releases/download/v4.44.2/yq_linux_amd64.tar.gz -O - | tar xz && mv yq_linux_amd64 /usr/bin/yq
+        helm  -n esignet template mock-identity-system mosip/mock-identity-system --version 0.9.3 -f deployments/configs/mock-identity-values.yaml  > deploy.yaml
+        yq  e -i 'select(di == 3).spec.template.spec.volumes += [{"name":"mock-identity-properties","configMap":{"name":"mock-identity-properties"}}]' deploy.yaml
+        yq e -i 'select(di == 3).spec.template.spec.containers[0] += {"volumeMounts":[{"mountPath":"/home/mosip/mock-identity-system-default.properties","name":"mock-identity-properties","subPath":"mock-identity-system-default.properties"}]}' deploy.yaml
+        kubectl apply -f deploy.yaml -n esignet
+        cat deployments/configs/mock-identity-ingress.yaml | sed 's/DOMAIN/${_DOMAIN_}/'  | kubectl apply -n esignet -f -
+      else
+        echo "Skipping mock service setup"
+      fi
   waitFor:
     - 'mock-identity-config-map'
 tags: ['cloud-builders-community']
@@ -202,6 +212,7 @@ substitutions:
   _REDIS_NAME_: 'esignet-dev-redis'
   _LB_NAME_: 'esignet-dev-glb-lb-ip'
   _NAME_: 'esignet-dev'
+  _ENABLE_MOCK_: "true"
 options:
     dynamicSubstitutions: true
     pool:
