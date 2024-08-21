@@ -48,7 +48,7 @@ firewallRuleInfo = [
       src_ip_ranges = ["0.0.0.0/0"]
       layer4_configs = {
         ip_protocol = "tcp"
-        ports = ["22"]
+        ports       = ["22"]
       }
     }
   },
@@ -65,7 +65,7 @@ firewallRuleInfo = [
       src_ip_ranges = ["0.0.0.0/0"]
       layer4_configs = {
         ip_protocol = "tcp"
-        ports = ["80", "443"]
+        ports       = ["80", "443"]
       }
     }
   },

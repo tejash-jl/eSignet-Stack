@@ -103,11 +103,11 @@ variable "firewallRuleInfo" {
     firewall_policy = string
     priority        = number
     match = object({
-      src_ip_ranges = optional(list(string))
+      src_ip_ranges  = optional(list(string))
       dest_ip_ranges = optional(list(string))
       layer4_configs = object({
         ip_protocol = string
-        ports = optional(list(string))
+        ports       = optional(list(string))
       })
     })
   }))
@@ -126,7 +126,7 @@ variable "firewallRuleInfo" {
         src_ip_ranges = ["0.0.0.0/0"]
         layer4_configs = {
           ip_protocol = "tcp"
-          ports = ["22"]
+          ports       = ["22"]
         }
       }
     },
@@ -143,7 +143,7 @@ variable "firewallRuleInfo" {
         src_ip_ranges = ["0.0.0.0/0"]
         layer4_configs = {
           ip_protocol = "tcp"
-          ports = ["80", "443", "8080"]
+          ports       = ["80", "443", "8080"]
         }
       }
     },
@@ -176,7 +176,7 @@ variable "firewallRuleInfo" {
         src_ip_ranges = ["0.0.0.0/0"]
         layer4_configs = {
           ip_protocol = "tcp"
-          ports = ["5432"]
+          ports       = ["5432"]
         }
       }
     },
@@ -277,7 +277,7 @@ variable "opsVMInfo" {
     ip_name      = string
     machine_type = string
     zone         = string
-    tags = optional(list(string))
+    tags         = optional(list(string))
     boot_disk = object({
       image = string
     })
@@ -393,18 +393,18 @@ variable "redisInfo" {
 
 variable "vpnInfo" {
   type = object({
-    gateway_1_asn   = number
-    gateway_2_asn   = number
-    bgp_range_1 = string
-    bgp_range_2 = string
+    gateway_1_asn    = number
+    gateway_2_asn    = number
+    bgp_range_1      = string
+    bgp_range_2      = string
     workerpool_range = string
 
   })
   default = {
-    gateway_1_asn = 65007
-    gateway_2_asn = 65008
-    bgp_range_1   = "169.254.7.0/30"
-    bgp_range_2   = "169.254.8.0/30"
+    gateway_1_asn    = 65007
+    gateway_2_asn    = 65008
+    bgp_range_1      = "169.254.7.0/30"
+    bgp_range_2      = "169.254.8.0/30"
     workerpool_range = "10.37.0.0"
   }
 }

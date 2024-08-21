@@ -6,7 +6,7 @@ provider "google" {
 terraform {
   required_providers {
     google-beta = {
-      source = "hashicorp/google-beta"
+      source  = "hashicorp/google-beta"
       version = "~>4"
     }
   }
@@ -87,7 +87,7 @@ resource "google_compute_network_firewall_policy_association" "fw_policy_assoc" 
 }
 
 resource "google_compute_network_firewall_policy_rule" "fw_rules" {
-  count = length(var.firewallRuleInfo)
+  count           = length(var.firewallRuleInfo)
   action          = var.firewallRuleInfo[count.index].action
   description     = var.firewallRuleInfo[count.index].description
   direction       = var.firewallRuleInfo[count.index].direction
@@ -122,10 +122,10 @@ resource "google_compute_global_address" "private_ip_block" {
 }
 
 resource "google_service_networking_connection" "service_nw" {
-  provider = google-beta
-  network  = google_compute_network.vpc.id
-  service  = "servicenetworking.googleapis.com"
-  depends_on = [google_compute_global_address.private_ip_block]
+  provider                = google-beta
+  network                 = google_compute_network.vpc.id
+  service                 = "servicenetworking.googleapis.com"
+  depends_on              = [google_compute_global_address.private_ip_block]
   reserved_peering_ranges = [google_compute_global_address.private_ip_block.name]
 }
 
@@ -134,9 +134,9 @@ resource "google_compute_address" "reserved_ngw_public_ip" {
 }
 
 resource "google_compute_router" "router" {
-  name    = var.routerInfo.name
-  region  = var.projectInfo.region
-  network = var.networkInfo.name
+  name       = var.routerInfo.name
+  region     = var.projectInfo.region
+  network    = var.networkInfo.name
   depends_on = [google_compute_network.vpc]
 }
 
@@ -146,15 +146,15 @@ resource "google_compute_router_nat" "nat_router" {
   region = var.projectInfo.region
 
   nat_ip_allocate_option = "MANUAL_ONLY"
-  nat_ips = [google_compute_address.reserved_ngw_public_ip.self_link]
+  nat_ips                = [google_compute_address.reserved_ngw_public_ip.self_link]
 
   source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
   subnetwork {
-    name = google_compute_subnetwork.gke_subnet.id
+    name                    = google_compute_subnetwork.gke_subnet.id
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
   }
   subnetwork {
-    name = google_compute_subnetwork.operations_subnet.id
+    name                    = google_compute_subnetwork.operations_subnet.id
     source_ip_ranges_to_nat = ["ALL_IP_RANGES"]
   }
   depends_on = [google_compute_router.router]
@@ -180,7 +180,7 @@ resource "google_sql_database_instance" "db_instance" {
   name             = var.sqlInfo.instanceName
   region           = var.projectInfo.region
   database_version = var.sqlInfo.version
-  depends_on = [google_service_networking_connection.service_nw]
+  depends_on       = [google_service_networking_connection.service_nw]
   settings {
     tier = var.sqlInfo.settings.tier
     ip_configuration {
@@ -191,13 +191,13 @@ resource "google_sql_database_instance" "db_instance" {
     }
   }
   deletion_protection = var.sqlInfo.protection
-  root_password = random_password.password.result
+  root_password       = random_password.password.result
 }
 
 resource "google_sql_database" "db" {
-  count = length(var.dbInfo)
-  name     = var.dbInfo[count.index].name
-  instance = var.dbInfo[count.index].instanceName
+  count      = length(var.dbInfo)
+  name       = var.dbInfo[count.index].name
+  instance   = var.dbInfo[count.index].instanceName
   depends_on = [google_sql_database_instance.db_instance]
 }
 
@@ -218,7 +218,7 @@ resource "google_compute_instance" "operations_vm" {
 
   }
   service_account {
-    email = data.google_service_account.sa.email
+    email  = data.google_service_account.sa.email
     scopes = ["cloud-platform"]
   }
   metadata_startup_script = file("../../deployments/scripts/instance-startup.sh")
@@ -255,11 +255,11 @@ resource "google_secret_manager_secret_iam_binding" "secret_iam_binding" {
 }
 
 resource "google_sql_user" "users" {
-  name     = "registry"
-  instance = google_sql_database_instance.db_instance.name
-  password = random_password.password.result
+  name            = "registry"
+  instance        = google_sql_database_instance.db_instance.name
+  password        = random_password.password.result
   deletion_policy = "ABANDON"
-  depends_on = [google_sql_database_instance.db_instance]
+  depends_on      = [google_sql_database_instance.db_instance]
 }
 
 resource "google_container_cluster" "gke_cluster" {
@@ -276,7 +276,7 @@ resource "google_container_cluster" "gke_cluster" {
   network                  = google_compute_network.vpc.name
   subnetwork               = google_compute_subnetwork.gke_subnet.name
 
-  dynamic private_cluster_config {
+  dynamic "private_cluster_config" {
     for_each = (var.clusterInfo.private_cluster_config == null) ? [] : [1]
     content {
       enable_private_nodes    = var.clusterInfo.private_cluster_config.enable_private_nodes
@@ -287,7 +287,7 @@ resource "google_container_cluster" "gke_cluster" {
       }
     }
   }
-  dynamic master_authorized_networks_config {
+  dynamic "master_authorized_networks_config" {
     for_each = (var.clusterInfo.master_authorized_networks_config == null) ? [] : [1]
     content {
       gcp_public_cidrs_access_enabled = var.clusterInfo.master_authorized_networks_config.gcp_public_cidrs_access_enabled
@@ -318,7 +318,7 @@ resource "google_container_cluster" "gke_cluster" {
       enabled = var.clusterInfo.gcsfuse_csi
     }
   }
-  depends_on = [google_sql_database.db]
+  depends_on          = [google_sql_database.db]
   deletion_protection = false
 }
 
@@ -337,7 +337,7 @@ resource "google_container_node_pool" "worker_pool" {
   }
   max_pods_per_node = var.clusterInfo.nodepool_config[0].max_pods_per_node
   management {
-    auto_repair = false
+    auto_repair  = false
     auto_upgrade = false
   }
 }
@@ -353,7 +353,7 @@ module "cloudbuild_private_pool" {
   worker_pool_name          = "${var.projectInfo.name}-cloudbuild-private-worker-pool"
   worker_address            = var.vpnInfo.workerpool_range
   worker_range_name         = "${var.projectInfo.name}-private-pool-worker-range"
-  depends_on = [google_compute_network.private_pool_vpc]
+  depends_on                = [google_compute_network.private_pool_vpc]
 }
 
 module "vpn_ha_1" {
@@ -368,7 +368,7 @@ module "vpn_ha_1" {
     ip_ranges = {
       (module.cloudbuild_private_pool.workerpool_range) = "Cloud Build Private Pool"
     }
-    mode = "CUSTOM"
+    mode   = "CUSTOM"
     groups = ["ALL_SUBNETS"]
   }
   peer_gcp_gateway = module.vpn_ha_2.self_link
@@ -376,10 +376,10 @@ module "vpn_ha_1" {
     remote-0 = {
       bgp_peer = {
         address = cidrhost(var.vpnInfo.bgp_range_1, 2) # 169.254.1.2
-        asn = var.vpnInfo.gateway_2_asn
+        asn     = var.vpnInfo.gateway_2_asn
       }
       bgp_peer_options                = null
-      bgp_session_range = "${cidrhost(var.vpnInfo.bgp_range_1, 1)}/30" # 169.254.1.1/30
+      bgp_session_range               = "${cidrhost(var.vpnInfo.bgp_range_1, 1)}/30" # 169.254.1.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
@@ -388,10 +388,10 @@ module "vpn_ha_1" {
     remote-1 = {
       bgp_peer = {
         address = cidrhost(var.vpnInfo.bgp_range_2, 2) #"169.254.2.2"
-        asn = var.vpnInfo.gateway_2_asn
+        asn     = var.vpnInfo.gateway_2_asn
       }
       bgp_peer_options                = null
-      bgp_session_range = "${cidrhost(var.vpnInfo.bgp_range_2, 1)}/30" # 169.254.2.1/30
+      bgp_session_range               = "${cidrhost(var.vpnInfo.bgp_range_2, 1)}/30" # 169.254.2.1/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
@@ -412,7 +412,7 @@ module "vpn_ha_2" {
     ip_ranges = {
       (var.clusterInfo.private_cluster_config.master_ipv4_cidr_block) = "GKE Cluster CIDR"
     }
-    mode = "CUSTOM"
+    mode   = "CUSTOM"
     groups = ["ALL_SUBNETS"]
   }
   peer_gcp_gateway = module.vpn_ha_1.self_link
@@ -420,10 +420,10 @@ module "vpn_ha_2" {
     remote-0 = {
       bgp_peer = {
         address = cidrhost(var.vpnInfo.bgp_range_1, 1) # 169.254.1.1
-        asn = var.vpnInfo.gateway_1_asn
+        asn     = var.vpnInfo.gateway_1_asn
       }
       bgp_peer_options                = null
-      bgp_session_range = "${cidrhost(var.vpnInfo.bgp_range_1, 2)}/30" # 169.254.1.2/30
+      bgp_session_range               = "${cidrhost(var.vpnInfo.bgp_range_1, 2)}/30" # 169.254.1.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 0
       peer_external_gateway_interface = null
@@ -432,10 +432,10 @@ module "vpn_ha_2" {
     remote-1 = {
       bgp_peer = {
         address = cidrhost(var.vpnInfo.bgp_range_2, 1) # 169.254.2.1
-        asn = var.vpnInfo.gateway_1_asn
+        asn     = var.vpnInfo.gateway_1_asn
       }
       bgp_peer_options                = null
-      bgp_session_range = "${cidrhost(var.vpnInfo.bgp_range_2, 2)}/30" # 169.254.2.2/30
+      bgp_session_range               = "${cidrhost(var.vpnInfo.bgp_range_2, 2)}/30" # 169.254.2.2/30
       ike_version                     = 2
       vpn_gateway_interface           = 1
       peer_external_gateway_interface = null
