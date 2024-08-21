@@ -353,6 +353,7 @@ module "cloudbuild_private_pool" {
   worker_pool_name          = "${var.projectInfo.name}-cloudbuild-private-worker-pool"
   worker_address            = var.vpnInfo.workerpool_range
   worker_range_name         = "${var.projectInfo.name}-private-pool-worker-range"
+  depends_on = [google_compute_network.private_pool_vpc]
 }
 
 module "vpn_ha_1" {
