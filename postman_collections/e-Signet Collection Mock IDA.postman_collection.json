@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "e2c15bfb-957a-4a1e-b1b1-f8fdb488c496",
+		"_postman_id": "12f02cac-8847-4c53-9067-af8b83ca9580",
 		"name": "e-Signet Collection Mock IDA",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "36542209"
@@ -169,7 +169,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{    \n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"clientId\": \"{{clientId}}\",\n        \"clientName\": \"{{$randomCompanyName}}\",\n        \"publicKey\": {{publicKey_jwk}},\n        \"relyingPartyId\": \"{{relayingPartyId}}\",\n        \"userClaims\": [\n            \"name\",\n            \"email\",\n            \"gender\",\n            \"phone_number\",\n            \"picture\",\n            \"birthdate\"\n        ],\n        \"authContextRefs\": [\n            \"mosip:idp:acr:generated-code\",\n            \"mosip:idp:acr:biometrics\",\n            \"mosip:idp:acr:linked-wallet\"\n        ],\n        \"logoUri\": \"https://avatars.githubusercontent.com/u/60199888\",\n        \"redirectUris\": [\n             \"{{redirectionUrl}}\",\n             \"io.mosip.residentapp://oauth\"\n        ],\n        \"grantTypes\": [\n            \"authorization_code\"\n        ],\n        \"clientAuthMethods\": [\n            \"private_key_jwt\"\n        ]\n    }\n}",
+							"raw": "{    \n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"clientId\": \"{{clientId}}\",\n        \"clientName\": \"Test-OIDC\",\n        \"publicKey\": {{publicKey_jwk}},\n        \"relyingPartyId\": \"{{relayingPartyId}}\",\n        \"userClaims\": [\n            \"name\",\n            \"email\",\n            \"gender\",\n            \"phone_number\",\n            \"picture\",\n            \"birthdate\"\n        ],\n        \"authContextRefs\": [\n            \"mosip:idp:acr:generated-code\",\n            \"mosip:idp:acr:biometrics\",\n            \"mosip:idp:acr:linked-wallet\"\n        ],\n        \"logoUri\": \"https://avatars.githubusercontent.com/u/60199888\",\n        \"redirectUris\": [\n             \"{{redirectionUrl}}\",\n             \"io.mosip.residentapp://oauth\"\n        ],\n        \"grantTypes\": [\n            \"authorization_code\"\n        ],\n        \"clientAuthMethods\": [\n            \"private_key_jwt\"\n        ]\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -655,7 +655,8 @@
 									"    pm.collectionVariables.set(\"code\", jsonData.response.code);",
 									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -683,7 +684,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"transactionId\": \"{{transaction_id}}\",\n        \"acceptedClaims\": [\"email\", \"name\", \"gender\"],\n        \"permittedAuthorizeScopes\" : []\n    }\n}",
+							"raw": "{\n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"transactionId\": \"{{transaction_id}}\",\n        \"acceptedClaims\": [\"dateOfBirth\", \"name\", \"gender\"],\n        \"permittedAuthorizeScopes\" : []\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
