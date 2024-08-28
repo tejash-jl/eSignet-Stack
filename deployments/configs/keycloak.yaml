@@ -58,7 +58,3 @@ externalDatabase:
   user: registry
   database: keycloak
   password: "CKHAzX1NoBg_m8As"
-
-image:
-  repository: mosipid/mosip-keycloak
-  tag: 16.1.1-debian-10-r85

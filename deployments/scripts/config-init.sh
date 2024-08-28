@@ -13,7 +13,7 @@ export DB_HOST=$(gcloud sql instances describe $2 --format=json  | jq -r ".ipAdd
 export DB_PORT=5432
 export DB_USERNAME=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret $3)
-export REDIS_HOST=$(gcloud redis instances describe esignet-dev-redis --region asia-south1 --format=json | jq -r ".host")
+export REDIS_HOST=$(gcloud redis instances describe $4 --region asia-south1 --format=json | jq -r ".host")
 if [ $6 = "false" ]; then
   export AUTHENTICATOR_SERVICE=IdaAuthenticatorImpl
 fi
