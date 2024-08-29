@@ -684,7 +684,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"transactionId\": \"{{transaction_id}}\",\n        \"acceptedClaims\": [\"dateOfBirth\", \"name\", \"gender\"],\n        \"permittedAuthorizeScopes\" : []\n    }\n}",
+							"raw": "{\n    \"requestTime\": \"{{$isoTimestamp}}\",\n    \"request\": {\n        \"transactionId\": \"{{transaction_id}}\",\n        \"acceptedClaims\": [\"birthdate\", \"name\", \"gender\"],\n        \"permittedAuthorizeScopes\" : []\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -949,6 +949,186 @@
 								"vci",
 								".well-known",
 								"openid-credential-issuer"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Partner Onboarding APIs",
+			"item": [
+				{
+					"name": "Get certificate - ROOT",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"applicationId\": \"a\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/system-info/certificate?applicationId=ROOT",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"system-info",
+								"certificate"
+							],
+							"query": [
+								{
+									"key": "applicationId",
+									"value": "ROOT"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get certificate - OIDC SERVICE",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"applicationId\": \"a\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/system-info/certificate?applicationId=OIDC_SERVICE",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"system-info",
+								"certificate"
+							],
+							"query": [
+								{
+									"key": "applicationId",
+									"value": "OIDC_SERVICE"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get certificate - OIDC PARTNER",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"applicationId\": \"a\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/system-info/certificate?applicationId=OIDC_PARTNER",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"system-info",
+								"certificate"
+							],
+							"query": [
+								{
+									"key": "applicationId",
+									"value": "OIDC_PARTNER"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upload certificate",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"requestTime\": \"{{$isoTimestamp}}\",\r\n  \"request\": {\r\n    \"applicationId\": \"OIDC_PARTNER\",\r\n    \"referenceId\" : \"\",\r\n    \"certificateData\": \"{{CERTIFICATE_DATA}}\"\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/system-info/uploadCertificate",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"system-info",
+								"uploadCertificate"
 							]
 						}
 					},
