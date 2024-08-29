@@ -14,8 +14,10 @@ export DB_PORT=5432
 export DB_USERNAME=postgres
 export DB_PASSWORD=$(gcloud secrets versions access latest --secret $3)
 export REDIS_HOST=$(gcloud redis instances describe $4 --region asia-south1 --format=json | jq -r ".host")
+export MISP_KEY=''
 if [ $6 = "false" ]; then
   export AUTHENTICATOR_SERVICE=IdaAuthenticatorImpl
+  export MISP_KEY=$misp_key
 fi
 envsubst < $LOCAL_ESIGNET_PROPERTIES  > $UPDATED_ESIGNET_PROPERTIES
 
