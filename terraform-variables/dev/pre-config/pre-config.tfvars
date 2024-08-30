@@ -126,7 +126,7 @@ dbInfo = [
     instanceName = "esignet-dev-pgsql"
   },
   {
-    name         = "keycloak"
+    name         = "esignet-keycloak"
     instanceName = "esignet-dev-pgsql"
   },
   {

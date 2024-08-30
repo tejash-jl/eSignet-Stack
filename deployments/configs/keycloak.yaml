@@ -56,5 +56,5 @@ externalDatabase:
   host: "10.1.1.3"
   port: 5432
   user: registry
-  database: keycloak
+  database: esignet-keycloak
   password: "CKHAzX1NoBg_m8As"
