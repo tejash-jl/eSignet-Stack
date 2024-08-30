@@ -2,10 +2,18 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'get-credentials'
   args: ['container', 'clusters', 'get-credentials', '${_CLUSTER_NAME_}', '--project=${_PROJECT_ID_}', '--region=${_REGION_}', '--internal-ip']
-- name: 'gcr.io/cloud-builders/kubectl'
+- name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
   id: 'ingress-cluster-admin'
-  entrypoint: 'kubectl'
-  args: ['create', 'clusterrolebinding', 'cluster-admin-binding', '--clusterrole', 'cluster-admin', '--user', '$(gcloud config get-value account)']
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      if [[ ${_SKIP_INGRESS} == "false" ]]
+      then
+          kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
+      else
+        echo "Skipping creating cluster role binding"
+      fi
   waitFor:
     - 'get-credentials'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -14,7 +22,12 @@ steps:
   args:
     - -c
     - |
-      bash ./deployments/scripts/ingress-init.sh ${_REGION_} ${_LB_NAME_}
+      if [[ ${_SKIP_INGRESS} == "false" ]]
+      then
+          bash ./deployments/scripts/ingress-init.sh ${_REGION_} ${_LB_NAME_}
+      else
+        echo "Skipping creating ingress"
+      fi
   waitFor:
     - 'ingress-cluster-admin'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
@@ -145,6 +158,7 @@ substitutions:
   _LB_NAME_: 'esignet-dev-glb-lb-ip'
   _NAME_: 'esignet-dev'
   _ENABLE_MOCK_: "true"
+  _SKIP_INGRESS_: "false"
 options:
     dynamicSubstitutions: true
     pool:
