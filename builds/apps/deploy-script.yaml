@@ -38,8 +38,16 @@ steps:
     - 'install-ingress'
 - name: 'gcr.io/${_PROJECT_ID_}/helm:3.12.0'
   id: 'install-certs-manager'
-  entrypoint: 'helm'
-  args: ['install', 'cert-manager', 'jetstack/cert-manager', '--version', 'v1.15.1', '-n', 'cert-manager', '--create-namespace', '--set', 'crds.enabled=true']
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      if [[ ${_SKIP_INGRESS_} == "false" ]]
+      then
+        helm install cert-manager jetstack/cert-manager --version v1.15.1 -n cert-manager --create-namespace --set crds.enabled=true
+      else
+        echo "Skipping cert manager setup"
+      fi
   waitFor:
     - 'helm-cert-manager-repo'
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
