@@ -8,7 +8,7 @@ steps:
   args:
     - -c
     - |
-      if [[ ${_SKIP_INGRESS} == "false" ]]
+      if [[ ${_SKIP_INGRESS_} == "false" ]]
       then
           kubectl create clusterrolebinding cluster-admin-binding --clusterrole cluster-admin --user $(gcloud config get-value account)
       else
@@ -22,7 +22,7 @@ steps:
   args:
     - -c
     - |
-      if [[ ${_SKIP_INGRESS} == "false" ]]
+      if [[ ${_SKIP_INGRESS_} == "false" ]]
       then
           bash ./deployments/scripts/ingress-init.sh ${_REGION_} ${_LB_NAME_}
       else
